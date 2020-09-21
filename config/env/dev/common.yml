@@ -1,0 +1,5 @@
+SNS_DYNAMIC_EMAIL_SUBSCRITPION_LIST:
+  - Endpoint: amila.sampath@yan3k.com          
+    Protocol: email  
+  - Endpoint: rcvojrgpyhkcxkydkv@upived.com
+    Protocol: email

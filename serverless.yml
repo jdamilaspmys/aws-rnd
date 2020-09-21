@@ -1,0 +1,266 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: myservice
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+custom:
+  common: ${file(config/env/dev/common.yml)}
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  iamRoleStatements:
+    # - Effect: Allow
+    #   Action:
+    #     - 'sqs:*'        
+    #   Resource:
+    #     - !Ref EmailFilterTopic
+    #     - !Ref TechEmailQueue
+    #     - !Ref OpsEmailQueue
+    #     - !Ref SalesEmailQueue
+  environment:  
+    SNS_EMAIL_FILTER_TOPIC: !Ref EmailFilterTopic
+    SNS_TECH_EMAIL_TOPIC: !Ref TechEmailTopic
+    SNS_OPS_EMAIL_TOPIC: !Ref OpsEmailTopic
+    SNS_SALES_EMAIL_TOPIC: !Ref SalesEmailTopic
+
+
+functions:
+  listEnvVariables:
+    name: ${self:service}-${self:provider.stage}-listEnv
+    handler: handler.listEnv
+    events:
+      - http:
+          method: get
+          path: /list/env        
+  # processDynamicEmailQueue:
+  #   name: ${self:service}-${self:provider.stage}-processDynamicEmailQueue
+  #   handler: src/handlers/email/handler.processDynamicEmailQueue
+  #   events:
+      # - schedule: rate(2 minutes) # TODO : This only for Testing 
+      # - sqs:
+      #     arn:
+      #       Fn::GetAtt:
+      #         - DynamicEmailQueue
+      #         - Arn       
+      # - schedule:    
+      #     rate: rate(1 minute)
+
+resources:      
+  Resources:    
+    # ----------------------------------
+    # Start - Dynamic Email Resources
+    # ----------------------------------
+    # Email Filter Topic
+    EmailFilterTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: ${self:service}-${self:provider.stage} Email Filter Topic
+        TopicName: ${self:service}-${self:provider.stage}-email-filter-topic    
+    # Tech, Ops Email Queue
+    TechEmailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-tech-email-queue    
+        RedrivePolicy: 
+          deadLetterTargetArn: !GetAtt DLEmailQueue.Arn
+          maxReceiveCount: 5
+    OpsEmailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-ops-email-queue
+        RedrivePolicy: 
+          deadLetterTargetArn: !GetAtt DLEmailQueue.Arn
+          maxReceiveCount: 5
+    SalesEmailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-sales-email-queue
+        RedrivePolicy: 
+          deadLetterTargetArn: !GetAtt DLEmailQueue.Arn
+          maxReceiveCount: 5
+    # Email DL Queue
+    DLEmailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-dl-email-queue
+    # Tech, Ops, Sales Email Queue policy 
+    EmailQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref TechEmailQueue
+          - !Ref OpsEmailQueue
+          - !Ref SalesEmailQueue          
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: sns.amazonaws.com
+              Action:
+                - sqs:SendMessage
+              Resource: "*"
+              Condition:
+                ArnEquals: 
+                  aws:SourceArn:
+                    !Ref EmailFilterTopic    
+    # Email Filter Topic Policy 
+    FilerEmailTopicPolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref TechEmailQueue
+          - !Ref OpsEmailQueue
+          - !Ref SalesEmailQueue          
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: sns.amazonaws.com
+              Action:
+                - sqs:SendMessage
+              Resource: "*"
+              Condition:
+                ArnEquals: 
+                  aws:SourceArn:
+                    !Ref EmailFilterTopic  
+    # Tech, Ops Queue Subscription
+    TechEmailQueueSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: !GetAtt TechEmailQueue.Arn
+        Protocol: sqs
+        FilterPolicy:
+          Q_TYPE:
+            - TECH            
+        RawMessageDelivery: True
+        TopicArn: !Ref EmailFilterTopic
+      DependsOn: 
+        - EmailFilterTopic
+        - TechEmailQueue      
+    OpsEmailQueueSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: !GetAtt OpsEmailQueue.Arn
+        Protocol: sqs         
+        FilterPolicy:
+          Q_TYPE:
+            - OPS                  
+        RawMessageDelivery: True
+        TopicArn: !Ref EmailFilterTopic
+      DependsOn: 
+        - EmailFilterTopic
+        - OpsEmailQueue 
+    SalesEmailQueueSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: !GetAtt SalesEmailQueue.Arn
+        Protocol: sqs         
+        FilterPolicy:
+          Q_TYPE:
+            - SALES                 
+        RawMessageDelivery: True
+        TopicArn: !Ref EmailFilterTopic
+      DependsOn: 
+        - EmailFilterTopic
+        - SalesEmailQueue
+    # Tech Ops Sales Email Topic
+    TechEmailTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: ${self:service}-${self:provider.stage} Teach Email Topic
+        TopicName: ${self:service}-${self:provider.stage}-tech-email-topic
+    OpsEmailTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: ${self:service}-${self:provider.stage} Ops Email Topic
+        TopicName: ${self:service}-${self:provider.stage}-ops-email-topic
+    SalesEmailTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: ${self:service}-${self:provider.stage} Sales Email Topic
+        TopicName: ${self:service}-${self:provider.stage}-sales-email-topic
+    # ----------------------------------
+    # End - Dynamic Email Resources
+    # ----------------------------------
+
+  Outputs:
+    # ----------------------------------
+    # Start - Dynamic Email Output
+    # ----------------------------------
+    EmailFilterTopic:
+      Description: ARN for Email Filter Topic
+      Value:
+        Ref: EmailFilterTopic
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-email-filter-topic
+    TechEmailQueue:
+      Description: ARN for Tech Email Queue
+      Value:
+        Ref: TechEmailQueue
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-tech-email-queue
+    OpsEmailQueue:
+      Description: ARN for Ops Email Queue
+      Value:
+        Ref: OpsEmailQueue
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-ops-email-queue
+    SalesEmailQueue:
+      Description: ARN for Sales Email Queue
+      Value:
+        Ref: SalesEmailQueue
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-sales-email-queue
+    DLEmailQueue:
+      Description: ARN for DL Email Queue for Tech, Ops, Sales Email Queue
+      Value:
+        Ref: DLEmailQueue
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-dl-email-queue
+    TechEmailTopic:
+      Description: ARN for Tech Email Topic
+      Value:
+        Ref: TechEmailTopic
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-tech-email-topic
+    OpsEmailTopic:
+      Description: ARN for Ops Email Topic
+      Value:
+        Ref: OpsEmailTopic
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-ops-email-topic
+    SalesEmailTopic:
+      Description: ARN for Salse Email Topic
+      Value:
+        Ref: SalesEmailTopic
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-sales-email-topic    
+    # ----------------------------------
+    # End - Dynamic Email Output
+    # ---------------------------------- 
