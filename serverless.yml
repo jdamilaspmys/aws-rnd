@@ -136,7 +136,7 @@ resources:
                   aws:SourceArn:
                     !Ref EmailFilterTopic    
     # Email Filter Topic Policy 
-    FilerEmailTopicPolicy:
+    FilterEmailTopicPolicy:
       Type: AWS::SQS::QueuePolicy
       Properties:
         Queues:
