@@ -20,6 +20,9 @@ service: myservice
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
 
+plugins:
+  - serverless-offline
+
 custom:
   common: ${file(config/env/dev/common.yml)}
 

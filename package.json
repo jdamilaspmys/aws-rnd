@@ -5,11 +5,15 @@
   "main": "handler.js",
   "scripts": {
     "deploy": "ENV=dev sls deploy",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:dev": "ENV=local sls offline start"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.752.0"
+  },
+  "devDependencies": {
+    "serverless-offline": "^6.7.0"
   }
 }
