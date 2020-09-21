@@ -40,6 +40,12 @@ provider:
     SNS_TECH_EMAIL_TOPIC: !Ref TechEmailTopic
     SNS_OPS_EMAIL_TOPIC: !Ref OpsEmailTopic
     SNS_SALES_EMAIL_TOPIC: !Ref SalesEmailTopic
+    TECH_EMAIL_QUEUE: !Ref TechEmailQueue  
+    OPS_EMAIL_QUEUE: !Ref OpsEmailQueue
+    SALES_EMAIL_QUEUE: !Ref SalesEmailQueue
+    DEAD_LETTER_TECH_EMAIL_QUEUE: !Ref DeadLetterTechEmailQueue  
+    DEAD_LETTER_OPS_EMAIL_QUEUE: !Ref DeadLetterOpsEmailQueue
+    DEAD_LETTER_SALES_EMAIL_QUEUE: !Ref DeadLetterSalesEmailQueue
 
 
 functions:
@@ -80,27 +86,35 @@ resources:
       Properties:
         QueueName: ${self:service}-${self:provider.stage}-tech-email-queue    
         RedrivePolicy: 
-          deadLetterTargetArn: !GetAtt DLEmailQueue.Arn
+          deadLetterTargetArn: !GetAtt DeadLetterTechEmailQueue.Arn
           maxReceiveCount: 5
     OpsEmailQueue:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${self:service}-${self:provider.stage}-ops-email-queue
         RedrivePolicy: 
-          deadLetterTargetArn: !GetAtt DLEmailQueue.Arn
+          deadLetterTargetArn: !GetAtt DeadLetterOpsEmailQueue.Arn
           maxReceiveCount: 5
     SalesEmailQueue:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${self:service}-${self:provider.stage}-sales-email-queue
         RedrivePolicy: 
-          deadLetterTargetArn: !GetAtt DLEmailQueue.Arn
+          deadLetterTargetArn: !GetAtt DeadLetterSalesEmailQueue.Arn
           maxReceiveCount: 5
     # Email DL Queue
-    DLEmailQueue:
+    DeadLetterTechEmailQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: ${self:service}-${self:provider.stage}-dl-email-queue
+        QueueName: ${self:service}-${self:provider.stage}-dead-letter-tech-email-queue
+    DeadLetterOpsEmailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-dead-letter-ops-email-queue
+    DeadLetterSalesEmailQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${self:provider.stage}-dead-letter-sales-email-queue
     # Tech, Ops, Sales Email Queue policy 
     EmailQueuePolicy:
       Type: AWS::SQS::QueuePolicy
@@ -233,13 +247,27 @@ resources:
       Export:
         Name:
           Fn::Sub: ${self:service}-${self:provider.stage}-sales-email-queue
-    DLEmailQueue:
-      Description: ARN for DL Email Queue for Tech, Ops, Sales Email Queue
+    DeadLetterTechEmailQueue:
+      Description: ARN for DL Email Queue for Tech Email Queue
       Value:
-        Ref: DLEmailQueue
+        Ref: DeadLetterTechEmailQueue
       Export:
         Name:
-          Fn::Sub: ${self:service}-${self:provider.stage}-dl-email-queue
+          Fn::Sub: ${self:service}-${self:provider.stage}-dead-letter-tech-email-queue
+    DeadLetterOpsEmailQueue:
+      Description: ARN for DL Email Queue for Ops Email Queue
+      Value:
+        Ref: DeadLetterOpsEmailQueue
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-dead-letter-ops-email-queue
+    DeadLetterSalesEmailQueue:
+      Description: ARN for DL Email Queue for Sales Email Queue
+      Value:
+        Ref: DeadLetterSalesEmailQueue
+      Export:
+        Name:
+          Fn::Sub: ${self:service}-${self:provider.stage}-dead-letter-sales-email-queue
     TechEmailTopic:
       Description: ARN for Tech Email Topic
       Value:
@@ -263,4 +291,4 @@ resources:
           Fn::Sub: ${self:service}-${self:provider.stage}-sales-email-topic    
     # ----------------------------------
     # End - Dynamic Email Output
-    # ---------------------------------- 
+    # ----------------------------------
