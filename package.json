@@ -6,7 +6,7 @@
   "scripts": {
     "deploy": "ENV=dev sls deploy",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy:dev": "ENV=local sls offline start"
+    "deploy:local": "ENV=local sls offline start"
   },
   "author": "",
   "license": "ISC",
