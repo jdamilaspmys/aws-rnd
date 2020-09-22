@@ -1,5 +1,9 @@
-SNS_DYNAMIC_EMAIL_SUBSCRITPION_LIST:
+SNS_TECH_EMAIL_SUBSCRITPION_LIST:
   - Endpoint: amila.sampath@yan3k.com          
-    Protocol: email  
-  - Endpoint: rcvojrgpyhkcxkydkv@upived.com
+    Protocol: email    
+SNS_OPS_EMAIL_SUBSCRITPION_LIST:
+  - Endpoint: amila.sampath@yan3k.com          
+    Protocol: email
+SNS_SALES_EMAIL_SUBSCRITPION_LIST:
+  - Endpoint: amila.sampath@yan3k.com          
     Protocol: email

@@ -30,15 +30,14 @@ provider:
   name: aws
   runtime: nodejs12.x
   iamRoleStatements:
-    # - Effect: Allow
-    #   Action:
-    #     - 'sqs:*'        
-    #   Resource:
-    #     - !Ref EmailFilterTopic
-    #     - !Ref TechEmailQueue
-    #     - !Ref OpsEmailQueue
-    #     - !Ref SalesEmailQueue
+    - Effect: Allow
+      Action:
+        - sns:*
+      Resource: '*'
+
   environment:  
+    SNS_MAX_RETRIES: 5
+    CLOUD_REGION: us-east-1
     SNS_EMAIL_FILTER_TOPIC: !Ref EmailFilterTopic
     SNS_TECH_EMAIL_TOPIC: !Ref TechEmailTopic
     SNS_OPS_EMAIL_TOPIC: !Ref OpsEmailTopic
@@ -59,6 +58,13 @@ functions:
       - http:
           method: get
           path: /list/env        
+  sendDynamicEmail:
+    name: ${self:service}-${self:provider.stage}-sendDynamicEmail
+    handler: src/handlers/sendDynamicEmail/handler.sendDynamicEmailHandler
+    events:
+      - http:
+          method: post
+          path: /send/dynamic/email
   # processDynamicEmailQueue:
   #   name: ${self:service}-${self:provider.stage}-processDynamicEmailQueue
   #   handler: src/handlers/email/handler.processDynamicEmailQueue
@@ -87,7 +93,7 @@ resources:
     TechEmailQueue:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: ${self:service}-${self:provider.stage}-tech-email-queue    
+        QueueName: ${self:service}-${self:provider.stage}-tech-email-queue            
         RedrivePolicy: 
           deadLetterTargetArn: !GetAtt DeadLetterTechEmailQueue.Arn
           maxReceiveCount: 5
@@ -204,16 +210,19 @@ resources:
       Properties:
         DisplayName: ${self:service}-${self:provider.stage} Teach Email Topic
         TopicName: ${self:service}-${self:provider.stage}-tech-email-topic
+        Subscription: ${self:custom.common.SNS_TECH_EMAIL_SUBSCRITPION_LIST}
     OpsEmailTopic:
       Type: AWS::SNS::Topic
       Properties:
         DisplayName: ${self:service}-${self:provider.stage} Ops Email Topic
         TopicName: ${self:service}-${self:provider.stage}-ops-email-topic
+        Subscription: ${self:custom.common.SNS_OPS_EMAIL_SUBSCRITPION_LIST}
     SalesEmailTopic:
       Type: AWS::SNS::Topic
       Properties:
         DisplayName: ${self:service}-${self:provider.stage} Sales Email Topic
         TopicName: ${self:service}-${self:provider.stage}-sales-email-topic
+        Subscription: ${self:custom.common.SNS_SALES_EMAIL_SUBSCRITPION_LIST}
     # ----------------------------------
     # End - Dynamic Email Resources
     # ----------------------------------
