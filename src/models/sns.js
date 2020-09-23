@@ -14,6 +14,20 @@ const publishWithAttributes = async (subject, body, topicArn, attributes) => {
   }
 }
 
+const publish = async (subject, message, topicArn) => {
+  try {
+    const params = {
+      Subject: subject,
+      TopicArn: topicArn,      
+      Message: message
+    }    
+    await sns.publish(params)
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
-  publishWithAttributes
+  publishWithAttributes,
+  publish
 }

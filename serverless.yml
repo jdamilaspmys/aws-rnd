@@ -25,6 +25,8 @@ plugins:
 
 custom:
   common: ${file(config/env/dev/common.yml)}
+  serverless-offline:    
+    httpPort: 4000
 
 provider:
   name: aws
@@ -65,26 +67,16 @@ functions:
       - http:
           method: post
           path: /send/dynamic/email
-  # processTechEmail:
-  #   name: ${self:service}-${self:provider.stage}-processTechEmail
-  #   handler: src/handlers/processTechOpsSalesSQS/handler.processTechOpsSalesSQS
-  #   events:
-  #     - sqs: 
-  #        arn: !GetAtt TechEmailQueue.Arn
-  #     - sqs: 
-  #        arn: !GetAtt TechEmailQueue.Arn
-  # processDynamicEmailQueue:
-  #   name: ${self:service}-${self:provider.stage}-processDynamicEmailQueue
-  #   handler: src/handlers/email/handler.processDynamicEmailQueue
-  #   events:
-      # - schedule: rate(2 minutes) # TODO : This only for Testing 
-      # - sqs:
-      #     arn:
-      #       Fn::GetAtt:
-      #         - DynamicEmailQueue
-      #         - Arn       
-      # - schedule:    
-      #     rate: rate(1 minute)
+  processTechOpsSalesSQS:
+    name: ${self:service}-${self:provider.stage}-processTechOpsSalesEmailSQS
+    handler: src/handlers/processTechOpsSalesEmailSQS/handler.processSQSData
+    events:
+      - sqs: 
+         arn: !GetAtt TechEmailQueue.Arn
+      # - sqs: 
+      #    arn: !GetAtt OpsEmailQueue.Arn
+      # - sqs: 
+      #    arn: !GetAtt SalesEmailQueue.Arn       
 
 resources:      
   Resources:    
