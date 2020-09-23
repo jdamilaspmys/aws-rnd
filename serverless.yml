@@ -73,10 +73,10 @@ functions:
     events:
       - sqs: 
          arn: !GetAtt TechEmailQueue.Arn
-      # - sqs: 
-      #    arn: !GetAtt OpsEmailQueue.Arn
-      # - sqs: 
-      #    arn: !GetAtt SalesEmailQueue.Arn       
+      - sqs: 
+         arn: !GetAtt OpsEmailQueue.Arn
+      - sqs: 
+         arn: !GetAtt SalesEmailQueue.Arn       
 
 resources:      
   Resources:    
