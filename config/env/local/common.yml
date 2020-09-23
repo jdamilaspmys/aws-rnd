@@ -1,0 +1,4 @@
+STAGE: local
+CLOUD_REGION: local
+SNS_MAX_RETRIES: 3
+SALES_FORCE_EMAIL: local.salesforce@local.com
