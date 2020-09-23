@@ -7,9 +7,9 @@ const sendDynamicEmail = async (event) => {
     const reqBody = JSON.parse(event.body)
     const validator = new SchemaValidator()
     await validator.validate(reqBody, sendDynamicEmailSchema)
-    const { subject, body, filterType } = reqBody    
-    const attributes = { 'Q_TYPE': { DataType: 'String', StringValue: filterType } }      
-    await sns.publishWithAttributes(subject, body, process.env.SNS_EMAIL_FILTER_TOPIC, attributes)
+    const { subject, sendTo } = reqBody    
+    const attributes = { 'SEND_TO': { DataType: 'String', StringValue: sendTo } }      
+    await sns.publishWithAttributes(subject, reqBody, process.env.SNS_EMAIL_FILTER_TOPIC, attributes)
     return { message: 'ok' }
   } catch (error) {
     throw error

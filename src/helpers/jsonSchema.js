@@ -12,9 +12,9 @@ const sendDynamicEmailSchema = {
       description: 'Email subject',
       example: 'Request to create Refuel Assignment'
     },
-    filterType: {
+    sendTo: {
       type: 'string',
-      description: `Email filter type 
+      description: `Email send group
        TECH   - Tech Team
        OPS    - Ops Team 
        SALES  - Sales Team       
@@ -25,7 +25,7 @@ const sendDynamicEmailSchema = {
   'required': [
     'subject',
     'body',
-    'filterType'
+    'sendTo'
   ]
 }
 

@@ -60,11 +60,19 @@ functions:
           path: /list/env        
   sendDynamicEmail:
     name: ${self:service}-${self:provider.stage}-sendDynamicEmail
-    handler: src/handlers/sendDynamicEmail/handler.sendDynamicEmailHandler
+    handler: src/handlers/sendDynamicEmail/handler.processEventData
     events:
       - http:
           method: post
           path: /send/dynamic/email
+  # processTechEmail:
+  #   name: ${self:service}-${self:provider.stage}-processTechEmail
+  #   handler: src/handlers/processTechOpsSalesSQS/handler.processTechOpsSalesSQS
+  #   events:
+  #     - sqs: 
+  #        arn: !GetAtt TechEmailQueue.Arn
+  #     - sqs: 
+  #        arn: !GetAtt TechEmailQueue.Arn
   # processDynamicEmailQueue:
   #   name: ${self:service}-${self:provider.stage}-processDynamicEmailQueue
   #   handler: src/handlers/email/handler.processDynamicEmailQueue
@@ -171,7 +179,7 @@ resources:
         Endpoint: !GetAtt TechEmailQueue.Arn
         Protocol: sqs
         FilterPolicy:
-          Q_TYPE:
+          SEND_TO:
             - TECH            
         RawMessageDelivery: True
         TopicArn: !Ref EmailFilterTopic
@@ -184,7 +192,7 @@ resources:
         Endpoint: !GetAtt OpsEmailQueue.Arn
         Protocol: sqs         
         FilterPolicy:
-          Q_TYPE:
+          SEND_TO:
             - OPS                  
         RawMessageDelivery: True
         TopicArn: !Ref EmailFilterTopic
@@ -197,7 +205,7 @@ resources:
         Endpoint: !GetAtt SalesEmailQueue.Arn
         Protocol: sqs         
         FilterPolicy:
-          Q_TYPE:
+          SEND_TO:
             - SALES                 
         RawMessageDelivery: True
         TopicArn: !Ref EmailFilterTopic

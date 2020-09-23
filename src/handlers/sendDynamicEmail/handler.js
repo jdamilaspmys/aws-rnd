@@ -1,7 +1,7 @@
 const { mapToJsonResponse } = require('../../helpers/general')
 const { sendDynamicEmail } = require('./sendDynamicEmail')
 
-const sendDynamicEmailHandler = async (event, context, callback) => {
+const processEventData = async (event, context, callback) => {
   try {
     const data = await sendDynamicEmail(event)
     callback(null, mapToJsonResponse(200, data))
@@ -11,5 +11,5 @@ const sendDynamicEmailHandler = async (event, context, callback) => {
 }
 
 module.exports = {
-  sendDynamicEmailHandler
+  processEventData
 }
