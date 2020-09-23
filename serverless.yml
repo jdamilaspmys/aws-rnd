@@ -76,8 +76,7 @@ functions:
       - sqs: 
          arn: !GetAtt OpsEmailQueue.Arn
       - sqs: 
-         arn: !GetAtt SalesEmailQueue.Arn       
-
+         arn: !GetAtt SalesEmailQueue.Arn
 resources:      
   Resources:    
     # ----------------------------------
