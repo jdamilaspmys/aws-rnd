@@ -66,7 +66,7 @@ functions:
     events:
       - http:
           method: post
-          path: /send/dynamic/email
+          path: /email
   processTechOpsSalesSQS:
     name: ${self:service}-${self:provider.stage}-processTechOpsSalesEmailSQS
     handler: src/handlers/processTechOpsSalesEmailSQS/handler.processSQSData
@@ -170,7 +170,7 @@ resources:
         Endpoint: !GetAtt TechEmailQueue.Arn
         Protocol: sqs
         FilterPolicy:
-          SEND_TO:
+          sendTo:
             - TECH            
         RawMessageDelivery: True
         TopicArn: !Ref EmailFilterTopic
@@ -183,7 +183,7 @@ resources:
         Endpoint: !GetAtt OpsEmailQueue.Arn
         Protocol: sqs         
         FilterPolicy:
-          SEND_TO:
+          sendTo:
             - OPS                  
         RawMessageDelivery: True
         TopicArn: !Ref EmailFilterTopic
@@ -196,7 +196,7 @@ resources:
         Endpoint: !GetAtt SalesEmailQueue.Arn
         Protocol: sqs         
         FilterPolicy:
-          SEND_TO:
+          sendTo:
             - SALES                 
         RawMessageDelivery: True
         TopicArn: !Ref EmailFilterTopic

@@ -20,6 +20,8 @@ const publish = async (subject, message, topicArn) => {
       Subject: subject,
       TopicArn: topicArn,      
       Message: message
+      // Message: JSON.stringify(message),
+      // MessageStructure: 'json' // Add Messsage Structure 
     }    
     await sns.publish(params)
   } catch (error) {
