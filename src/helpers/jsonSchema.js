@@ -1,5 +1,5 @@
 const sendDynamicEmailSchema = {
-  'id': 'post:/send/dynamic/email',
+  'id': 'post:/email',
   'type': 'object',
   'properties': {
     subject: {

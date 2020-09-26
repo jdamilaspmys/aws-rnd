@@ -1,10 +1,10 @@
 const sns = require('../../models/sns')
-const sendToSNSTopicMapper = require('../../helpers/sendToSNSTopicMapper')
+const { getSendToSNSTopicArn } = require('../../helpers/getSendToSNSTopicArn')
 
 const processTechOpsSalesEmailSQS = async (data) => {
   try {     
     const { subject, body, sendTo } = data        
-    const topicArn = sendToSNSTopicMapper[sendTo]
+    const topicArn = getSendToSNSTopicArn(sendTo)    
     await sns.publish(subject, body, topicArn)    
   } catch (error) {
     throw error
